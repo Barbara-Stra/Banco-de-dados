@@ -16,10 +16,7 @@ CREATE TABLE profissional (
 CREATE TABLE clinica (
     clinica_cnpj VARCHAR(14) NOT NULL PRIMARY KEY,
     clinica_nome VARCHAR(50) NOT NULL,
-    clinica_rua VARCHAR(100) NOT NULL,
-    clinica_bairro VARCHAR(40) NOT NULL,
-    clinica_complemento VARCHAR(150),
-    clinica_numero VARCHAR(250) NOT NULL
+    clinica_endereco VARCHAR(250) NOT NULL
 );
 
 
@@ -403,4 +400,3 @@ END$$
 DELIMITER ;
 
 CALL sp_obter_historico_paciente("11122233344");
-
