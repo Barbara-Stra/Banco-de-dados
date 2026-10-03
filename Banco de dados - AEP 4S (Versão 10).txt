@@ -1,10 +1,10 @@
 
-CREATE DATABASE trabalho_psicologia;
+CREATE DATABASE IF NOT EXISTS trabalho_psicologia;
 
 USE trabalho_psicologia;
 
 
-CREATE TABLE profissional (
+CREATE TABLE IF NOT EXISTS profissional (
     profissional_cpf VARCHAR(11) NOT NULL PRIMARY KEY,
     profissional_nome VARCHAR(100) NOT NULL,
     profissional_telefone VARCHAR(40) NOT NULL UNIQUE,
@@ -13,14 +13,18 @@ CREATE TABLE profissional (
 );
 
 
-CREATE TABLE clinica (
+CREATE TABLE IF NOT EXISTS clinica (
     clinica_cnpj VARCHAR(14) NOT NULL PRIMARY KEY,
     clinica_nome VARCHAR(50) NOT NULL,
-    clinica_endereco VARCHAR(250) NOT NULL
+    clinica_rua VARCHAR(100) NOT NULL,
+    clinica_bairro VARCHAR(40) NOT NULL,
+    clinica_complemento VARCHAR(150),
+    clinica_numero VARCHAR(250) NOT NULL,
+    clinica_media_custo DECIMAL(10,2)
 );
 
 
-CREATE TABLE paciente (
+CREATE TABLE IF NOT EXISTS paciente (
     paciente_cpf VARCHAR(11) PRIMARY KEY,
     paciente_nome VARCHAR(100) NOT NULL,
     paciente_telefone VARCHAR(40) NOT NULL,
@@ -35,7 +39,7 @@ CREATE TABLE paciente (
 );
 
 
-CREATE TABLE prontuario (
+CREATE TABLE IF NOT EXISTS prontuario (
     prontuario_id INT PRIMARY KEY,
     paciente_cpf VARCHAR(11) NOT NULL,
     profissional_cpf VARCHAR(11) NOT NULL,
@@ -56,7 +60,7 @@ CREATE TABLE prontuario (
 );
 
 
-CREATE TABLE agendamento (
+CREATE TABLE IF NOT EXISTS agendamento (
     agendamento_id INT PRIMARY KEY,
     agendamento_data DATE NOT NULL,
     agendamento_horario TIME NOT NULL,
@@ -84,7 +88,7 @@ CREATE TABLE agendamento (
     
 );
 
-CREATE TABLE equipe (
+CREATE TABLE IF NOT EXISTS equipe (
     clinica_cnpj VARCHAR(14),
     profissional_cpf VARCHAR(11),
 
@@ -104,7 +108,7 @@ CREATE TABLE equipe (
 );
 
 
-CREATE TABLE log_paciente (
+CREATE TABLE IF NOT EXISTS log_paciente (
 	log_id INT AUTO_INCREMENT PRIMARY KEY,
 	log_alterado_de_paciente_cpf VARCHAR(11),
 	log_alterado_para_paciente_cpf VARCHAR(11),
@@ -122,7 +126,7 @@ CREATE TABLE log_paciente (
 -- ---------------------------------------------------------- INSERTS
 
 
-INSERT INTO profissional (profissional_cpf, profissional_nome, profissional_telefone, profissional_email, profissional_valor_consulta) 
+INSERT IGNORE INTO profissional (profissional_cpf, profissional_nome, profissional_telefone, profissional_email, profissional_valor_consulta) 
 VALUES 
     ('12345678901', 'Dra. Ana Paula Souza', '(11) 98765-4321', 'ana.souza@psicologia.com.br', 180.00),
     ('23456789012', 'Dr. Carlos Alberto Mendes', '(11) 97654-3210', 'carlos.mendes@psicologia.com.br', 200.00),
@@ -135,7 +139,7 @@ VALUES
     ('90123456789', 'Dr. Marcelo Ribeiro Almeida', '(11) 90987-6543', 'marcelo.almeida@psicologia.com.br', 230.00),
     ('01234567890', 'Dra. Renata Carvalho Lima', '(11) 89876-5432', 'renata.lima@psicologia.com.br', 205.00);
 
-INSERT INTO clinica (clinica_cnpj, clinica_nome, clinica_rua, clinica_bairro, clinica_complemento, clinica_numero) 
+INSERT IGNORE INTO clinica (clinica_cnpj, clinica_nome, clinica_rua, clinica_bairro, clinica_complemento, clinica_numero) 
 VALUES 
     ('12345678000199', 'Clínica Bem-Estar', 'Rua das Palmeiras', 'Jardim América', 'Sala 201', '450'),
     ('98765432000188', 'Centro Psicológico Vida', 'Avenida Paulista', 'Bela Vista', 'Conjunto 34', '1578'),
@@ -149,7 +153,7 @@ VALUES
     ('25814736000100', 'Centro de Psicologia Saber', 'Rua das Camélias', 'Vila Madalena', 'Conjunto 8', '456');
 	
 
-INSERT INTO paciente (paciente_cpf, paciente_nome, paciente_telefone, paciente_endereco, profissional_cpf) 
+INSERT IGNORE INTO paciente (paciente_cpf, paciente_nome, paciente_telefone, paciente_endereco, profissional_cpf) 
 VALUES 
     ('11122233344', 'João Pedro Silva', '(11) 91234-5678', 'Rua das Acácias, 123, Apto 45, Jardim das Flores', '12345678901'),
     ('22233344455', 'Maria Fernanda Oliveira', '(11) 92345-6789', 'Avenida Brasil, 456, Casa 12, Vila Nova', '23456789012'),
@@ -163,7 +167,7 @@ VALUES
     ('88877766655', 'Tatiana Mendes Soares', '(11) 92345-8765', 'Avenida Ipiranga, 789, Casa 3, Bela Vista', '78901234567');
 
 
-INSERT INTO equipe (clinica_cnpj, profissional_cpf) 
+INSERT IGNORE INTO equipe (clinica_cnpj, profissional_cpf) 
 VALUES 
     ('12345678000199', '12345678901'),
     ('12345678000199', '23456789012'),
@@ -177,7 +181,7 @@ VALUES
     ('78912345000144', '89012345678');
 
 
-INSERT INTO prontuario (prontuario_id, paciente_cpf, profissional_cpf, descricao) 
+INSERT IGNORE INTO prontuario (prontuario_id, paciente_cpf, profissional_cpf, descricao) 
 VALUES 
     (1, '11122233344', '12345678901', 'Paciente apresenta sintomas de ansiedade generalizada. Relata preocupação excessiva com trabalho e insônia há 3 meses. Iniciaremos terapia cognitivo-comportamental.'),
     (2, '11122233344', '12345678901', 'Segunda sessão. Paciente demonstrou melhora na identificação de pensamentos automáticos. Técnicas de respiração estão sendo bem assimiladas.'),
@@ -191,7 +195,7 @@ VALUES
     (10, '66677788899', '45678901234', 'Quinta sessão. Paciente conseguiu enfrentar situação social com menos ansiedade. Técnicas de exposição estão sendo eficazes.');
 
 
-INSERT INTO agendamento (agendamento_id, agendamento_data, agendamento_horario, clinica_cnpj, profissional_cpf, paciente_cpf) 
+INSERT IGNORE INTO agendamento (agendamento_id, agendamento_data, agendamento_horario, clinica_cnpj, profissional_cpf, paciente_cpf) 
 VALUES 
     (1, '2026-09-01', '09:00:00', '12345678000199', '12345678901', '11122233344'),
     (2, '2026-09-01', '10:30:00', '12345678000199', '12345678901', '11122233344'),
@@ -261,9 +265,11 @@ FROM equipe
 
 INNER JOIN profissional ON equipe.profissional_cpf = profissional.profissional_cpf
 
-WHERE equipe.clinica_cnpj = '12345678000199'
+WHERE equipe.clinica_cnpj = '12345678000199';
 
 -- --------------------------------- Triggers
+
+DROP TRIGGER IF EXISTS trg_paciente_after_update;
 
 DELIMITER $$
 
@@ -301,6 +307,8 @@ END$$
 
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS trg_paciente_before_delete;
+
 DELIMITER $$
 
 CREATE TRIGGER trg_paciente_before_delete
@@ -336,6 +344,8 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+DROP TRIGGER IF EXISTS trg_paciente_after_insert;
 
 DELIMITER $$
 
@@ -374,6 +384,9 @@ END$$
 
 DELIMITER ;
 -- --------------------------------- Stored Procedure
+
+DROP PROCEDURE IF EXISTS sp_obter_historico_paciente;
+
 DELIMITER $$
 
 CREATE PROCEDURE sp_obter_historico_paciente(
@@ -400,3 +413,178 @@ END$$
 DELIMITER ;
 
 CALL sp_obter_historico_paciente("11122233344");
+
+
+-- ------------------------- VIEW AGENDAMENTOS
+
+DROP VIEW IF EXISTS vw_agendamentos;
+
+CREATE VIEW vw_agendamentos AS
+SELECT 
+    agendamento.agendamento_id,
+    agendamento.agendamento_data,
+    agendamento.agendamento_horario,
+    agendamento.paciente_cpf,
+    profissional.profissional_nome,
+    paciente.paciente_nome,
+    clinica.clinica_nome
+FROM agendamento
+INNER JOIN profissional
+    ON agendamento.profissional_cpf = profissional.profissional_cpf
+INNER JOIN clinica
+    ON agendamento.clinica_cnpj = clinica.clinica_cnpj
+INNER JOIN paciente
+    ON agendamento.paciente_cpf = paciente.paciente_cpf;
+
+
+-- ------------------------- PROCEDURE ALTERAR AGENDAMENTO
+
+DROP PROCEDURE IF EXISTS alterar_agendamento;
+
+DELIMITER $$
+
+CREATE PROCEDURE alterar_agendamento(
+    IN novo_dia DATE,
+    IN novo_horario TIME,
+    IN p_paciente_cpf VARCHAR(11)
+)
+BEGIN
+
+    SELECT *
+    FROM vw_agendamentos
+    WHERE paciente_cpf = p_paciente_cpf;
+
+    UPDATE agendamento
+    SET agendamento_data = novo_dia,
+        agendamento_horario = novo_horario
+    WHERE agendamento.paciente_cpf = p_paciente_cpf;
+
+END $$
+
+DELIMITER ;
+
+-- ------------------------------- VIEW MEDIA CUSTO
+
+DROP VIEW IF EXISTS vw_media_custo_clinica;
+
+CREATE VIEW vw_media_custo_clinica AS
+SELECT
+    c.clinica_cnpj,
+    c.clinica_nome,
+    AVG(p.profissional_valor_consulta) AS media_custo
+FROM clinica c
+INNER JOIN equipe e
+    ON c.clinica_cnpj = e.clinica_cnpj
+INNER JOIN profissional p
+    ON e.profissional_cpf = p.profissional_cpf
+GROUP BY
+    c.clinica_cnpj,
+    c.clinica_nome;
+
+
+-- ------------------------------- TRIGGER ATUALIZA MEDIA
+
+DROP TRIGGER IF EXISTS trg_atualiza_media_custo;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_atualiza_media_custo
+AFTER UPDATE ON profissional
+FOR EACH ROW
+BEGIN
+
+    UPDATE clinica c
+    INNER JOIN vw_media_custo_clinica v
+        ON c.clinica_cnpj = v.clinica_cnpj
+    INNER JOIN equipe e
+        ON c.clinica_cnpj = e.clinica_cnpj
+    SET c.clinica_media_custo = v.media_custo
+    WHERE e.profissional_cpf = NEW.profissional_cpf;
+
+END$$
+
+DELIMITER ;
+
+-- ------------------------------- PROCEDURE ALTERA VALOR
+
+DROP PROCEDURE IF EXISTS alterar_valor_consulta;
+
+DELIMITER $$
+
+CREATE PROCEDURE alterar_valor_consulta(
+    IN p_profissional_cpf VARCHAR(11),
+    IN p_novo_valor DECIMAL(10,2)
+)
+BEGIN
+
+    UPDATE profissional
+    SET profissional_valor_consulta = p_novo_valor
+    WHERE profissional_cpf = p_profissional_cpf;
+
+END$$
+
+DELIMITER ;
+
+-- ------------------------------- UPDATE
+
+UPDATE clinica c
+INNER JOIN vw_media_custo_clinica v
+    ON c.clinica_cnpj = v.clinica_cnpj
+SET c.clinica_media_custo = v.media_custo;
+
+CALL alterar_valor_consulta(
+    '12345678901',
+    250.00
+);
+
+-- ------------------------------- CHAMA PROCEDURE
+
+SELECT
+    clinica_cnpj,
+    clinica_nome,
+    clinica_media_custo
+FROM clinica;
+
+SELECT *
+FROM vw_media_custo_clinica;
+
+CALL alterar_agendamento(
+    '2026-09-20',
+    '15:00:00',
+    '11122233344'
+);
+
+-- ------------------------------- VIEW RELATORIO PACIENTE
+
+DROP VIEW IF EXISTS relatorio_paciente;
+
+CREATE VIEW relatorio_paciente AS
+SELECT
+    paciente.paciente_cpf,
+    paciente.paciente_nome,
+    prontuario.descricao
+FROM paciente
+INNER JOIN prontuario
+    ON paciente.paciente_cpf = prontuario.paciente_cpf;
+
+-- ------------------------------- PROCEDURE PARA VER UM RELATORIO PACIENTE
+
+DROP PROCEDURE IF EXISTS sp_relatorio_paciente;
+
+DELIMITER //
+
+CREATE PROCEDURE sp_relatorio_paciente(
+    IN p_paciente_cpf VARCHAR(11)
+)
+BEGIN
+    SELECT
+        paciente_nome,
+        descricao
+    FROM relatorio_paciente
+    WHERE paciente_cpf = p_paciente_cpf;
+END$$
+
+DELIMITER ;
+
+
+DELIMITER ;
