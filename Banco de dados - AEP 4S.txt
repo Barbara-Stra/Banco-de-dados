@@ -588,3 +588,15 @@ DELIMITER ;
 
 
 DELIMITER ;
+
+
+/* Grant p/Root
+
+
+1 - GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+
+2 - flush privileges;
+
+3 - exit;
+
+*/
