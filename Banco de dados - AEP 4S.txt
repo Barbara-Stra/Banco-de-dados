@@ -130,7 +130,7 @@ INSERT IGNORE INTO profissional (profissional_cpf, profissional_nome, profission
 VALUES 
     ('12345678901', 'Dra. Ana Paula Souza', '(11) 98765-4321', 'ana.souza@psicologia.com.br', 180.00),
     ('23456789012', 'Dr. Carlos Alberto Mendes', '(11) 97654-3210', 'carlos.mendes@psicologia.com.br', 200.00),
-    ('34567890123', 'Dra. Beatriz Oliveira Lima', '(11) 96543-2109', 'beatriz.lima@psicologia.com.br', 220.00),
+    ('34567890123', 'Dra. Beatriz Oliveira Lima', '(11) 96543-2109', 'beatriz.lima@psicologia.com.br', 200.00),
     ('45678901234', 'Dr. Ricardo Fernandes Santos', '(11) 95432-1098', 'ricardo.santos@psicologia.com.br', 190.00),
     ('56789012345', 'Dra. Camila Rodrigues Costa', '(11) 94321-0987', 'camila.costa@psicologia.com.br', 210.00),
     ('67890123456', 'Dra. Fernanda Castro Rocha', '(11) 93210-9876', 'fernanda.castro@psicologia.com.br', 195.00),
@@ -554,6 +554,7 @@ CALL alterar_agendamento(
     '11122233344'
 );
 
+
 -- ------------------------------- VIEW RELATORIO PACIENTE
 
 DROP VIEW IF EXISTS relatorio_paciente;
@@ -589,14 +590,3 @@ DELIMITER ;
 
 DELIMITER ;
 
-
-/* Grant p/Root
-
-
-1 - GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
-
-2 - flush privileges;
-
-3 - exit;
-
-*/
