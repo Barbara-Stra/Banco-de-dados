@@ -1,0 +1,78 @@
+USE trabalho_psicologia;
+
+-- 1. Gerar 1.000.000 de prontuários usando CROSS JOIN
+
+INSERT INTO prontuario (
+    prontuario_id,
+    paciente_cpf,
+    profissional_cpf,
+    descricao
+)
+SELECT
+    base.ultimo_id + numeros.n + 1 AS prontuario_id,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT(
+        'Registro sintetico de teste numero ',
+        numeros.n + 1,
+        '. Conteudo ficticio para teste de volume.'
+    ) AS descricao
+
+FROM (
+    -- Gerar números de 0 até 999.999
+    SELECT
+        a.n
+        + b.n * 10
+        + c.n * 100
+        + d.n * 1000
+        + e.n * 10000
+        + f.n * 100000 AS n
+    FROM
+        (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+    CROSS JOIN
+        (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+    CROSS JOIN
+        (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+    CROSS JOIN
+        (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+    CROSS JOIN
+        (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    CROSS JOIN
+        (SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) f
+) numeros
+
+CROSS JOIN (
+    SELECT COALESCE(MAX(prontuario_id), 0) AS ultimo_id
+    FROM prontuario
+) base
+
+INNER JOIN (
+    SELECT
+        p.paciente_cpf,
+        @linha_p := @linha_p + 1 AS idx
+    FROM paciente p
+    CROSS JOIN (SELECT @linha_p := 0) inicial
+    ORDER BY p.paciente_cpf
+) pacientes
+    ON MOD(numeros.n, (
+        SELECT COUNT(*) FROM paciente
+    )) = pacientes.idx - 1
+
+INNER JOIN (
+    SELECT
+        p.profissional_cpf,
+        @linha_prof := @linha_prof + 1 AS idx
+    FROM profissional p
+    CROSS JOIN (SELECT @linha_prof := 0) inicial
+    ORDER BY p.profissional_cpf
+) profissionais
+    ON MOD(
+        FLOOR(numeros.n / (SELECT COUNT(*) FROM paciente)),
+        (SELECT COUNT(*) FROM profissional)
+    ) = profissionais.idx - 1;
+
+
+
+
+SELECT COUNT(*) AS total_prontuarios
+FROM prontuario;
