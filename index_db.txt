@@ -1,3 +1,4 @@
+/*
 Laudo da tabela de prontuario com 1 milhao de registros
 
 consulta sem index: 8 segundos
@@ -15,4 +16,6 @@ WHERE descricao = 'Segunda sessão. Paciente demonstrou melhora na identificaç�
 
 SELECT * FROM prontuario
 WHERE descricao = 'Segunda sessão. Paciente demonstrou melhora na identificação de pensamentos automáticos. Técnicas de respiração estão sendo bem assimiladas.';
+
+*/
 
