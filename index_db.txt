@@ -1,0 +1,18 @@
+Laudo da tabela de prontuario com 1 milhao de registros
+
+consulta sem index: 8 segundos
+
+consulta com index: 6 segundos
+
+
+EXPLAIN SELECT * FROM prontuario
+WHERE descricao = 'Segunda sessão. Paciente demonstrou melhora na identificação de pensamentos automáticos. Técnicas de respiração estão sendo bem assimiladas.';
+
+CREATE INDEX idx_descricao ON prontuario (descricao);
+
+EXPLAIN SELECT * FROM prontuario
+WHERE descricao = 'Segunda sessão. Paciente demonstrou melhora na identificação de pensamentos automáticos. Técnicas de respiração estão sendo bem assimiladas.';
+
+SELECT * FROM prontuario
+WHERE descricao = 'Segunda sessão. Paciente demonstrou melhora na identificação de pensamentos automáticos. Técnicas de respiração estão sendo bem assimiladas.';
+
