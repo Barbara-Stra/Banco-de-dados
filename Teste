@@ -1,0 +1,1187 @@
+
+SET NAMES utf8;
+
+
+CREATE DATABASE IF NOT EXISTS trabalho_psicologia;
+
+USE trabalho_psicologia;
+
+
+CREATE TABLE IF NOT EXISTS profissional (
+    profissional_cpf VARCHAR(11) NOT NULL PRIMARY KEY,
+    profissional_nome VARCHAR(100) NOT NULL,
+    profissional_telefone VARCHAR(40) NOT NULL UNIQUE,
+    profissional_email VARCHAR(150) UNIQUE,
+    profissional_valor_consulta DECIMAL(10,2) NOT NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS clinica (
+    clinica_cnpj VARCHAR(14) NOT NULL PRIMARY KEY,
+    clinica_nome VARCHAR(50) NOT NULL,
+    clinica_rua VARCHAR(100) NOT NULL,
+    clinica_bairro VARCHAR(40) NOT NULL,
+    clinica_complemento VARCHAR(150),
+    clinica_numero VARCHAR(250) NOT NULL,
+    clinica_media_custo DECIMAL(10,2)
+);
+
+
+CREATE TABLE IF NOT EXISTS paciente (
+    paciente_cpf VARCHAR(11) PRIMARY KEY,
+    paciente_nome VARCHAR(100) NOT NULL,
+    paciente_telefone VARCHAR(40) NOT NULL,
+    paciente_endereco VARCHAR(250) NOT NULL,
+    profissional_cpf VARCHAR(11),
+
+    CONSTRAINT fk_paciente_profissional
+        FOREIGN KEY (profissional_cpf)
+        REFERENCES profissional (profissional_cpf)
+        ON UPDATE CASCADE
+  
+);
+
+
+CREATE TABLE IF NOT EXISTS prontuario (
+    prontuario_id INT PRIMARY KEY,
+    paciente_cpf VARCHAR(11) NOT NULL,
+    profissional_cpf VARCHAR(11) NOT NULL,
+    descricao VARCHAR(500),
+
+    CONSTRAINT fk_prontuario_paciente
+        FOREIGN KEY (paciente_cpf)
+        REFERENCES paciente (paciente_cpf)
+	ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    
+
+    CONSTRAINT fk_prontuario_profissional
+        FOREIGN KEY (profissional_cpf)
+        REFERENCES profissional (profissional_cpf)
+        ON UPDATE CASCADE
+   
+);
+
+
+CREATE TABLE IF NOT EXISTS agendamento (
+    agendamento_id INT PRIMARY KEY,
+    agendamento_data DATE NOT NULL,
+    agendamento_horario TIME NOT NULL,
+    clinica_cnpj VARCHAR(14) NOT NULL,
+    profissional_cpf VARCHAR(11) NOT NULL,
+    paciente_cpf VARCHAR(11) NOT NULL,
+
+    CONSTRAINT fk_agendamento_paciente
+        FOREIGN KEY (paciente_cpf)
+        REFERENCES paciente (paciente_cpf)
+        ON UPDATE CASCADE
+	ON DELETE CASCADE,
+   
+
+    CONSTRAINT fk_agendamento_profissional
+        FOREIGN KEY (profissional_cpf)
+        REFERENCES profissional (profissional_cpf)
+        ON UPDATE CASCADE,
+     
+
+    CONSTRAINT fk_agendamento_clinica
+        FOREIGN KEY (clinica_cnpj)
+        REFERENCES clinica (clinica_cnpj)
+        ON UPDATE CASCADE
+    
+);
+
+CREATE TABLE IF NOT EXISTS equipe (
+    clinica_cnpj VARCHAR(14),
+    profissional_cpf VARCHAR(11),
+
+    PRIMARY KEY (clinica_cnpj, profissional_cpf),
+
+    CONSTRAINT fk_equipe_clinica
+        FOREIGN KEY (clinica_cnpj)
+        REFERENCES clinica (clinica_cnpj)
+        ON UPDATE CASCADE,
+        
+
+    CONSTRAINT fk_equipe_profissional
+        FOREIGN KEY (profissional_cpf)
+        REFERENCES profissional (profissional_cpf)
+        ON UPDATE CASCADE
+  
+);
+
+
+CREATE TABLE IF NOT EXISTS log_paciente (
+	log_id INT AUTO_INCREMENT PRIMARY KEY,
+	log_alterado_de_paciente_cpf VARCHAR(11),
+	log_alterado_para_paciente_cpf VARCHAR(11),
+	log_alterado_de_paciente_nome VARCHAR(100),
+	log_alterado_para_paciente_nome VARCHAR(100),
+	log_alterado_de_paciente_telefone VARCHAR (40),
+	log_alterado_para_paciente_telefone VARCHAR (40),
+	log_data DATETIME,
+	log_alterado_de_profissional_cpf VARCHAR(11),
+	log_alterado_para_profissional_cpf VARCHAR(11),
+	log_usuario VARCHAR(30),
+	log_operacao VARCHAR(30)
+);
+
+-- ---------------------------------------------------------- INSERTS
+
+
+INSERT IGNORE INTO profissional (profissional_cpf, profissional_nome, profissional_telefone, profissional_email, profissional_valor_consulta) 
+VALUES 
+    ('12345678901', 'Dra. Ana Paula Souza', '(11) 98765-4321', 'ana.souza@psicologia.com.br', 180.00),
+    ('23456789012', 'Dr. Carlos Alberto Mendes', '(11) 97654-3210', 'carlos.mendes@psicologia.com.br', 200.00),
+    ('34567890123', 'Dra. Beatriz Oliveira Lima', '(11) 96543-2109', 'beatriz.lima@psicologia.com.br', 200.00),
+    ('45678901234', 'Dr. Ricardo Fernandes Santos', '(11) 95432-1098', 'ricardo.santos@psicologia.com.br', 190.00),
+    ('56789012345', 'Dra. Camila Rodrigues Costa', '(11) 94321-0987', 'camila.costa@psicologia.com.br', 210.00),
+    ('67890123456', 'Dra. Fernanda Castro Rocha', '(11) 93210-9876', 'fernanda.castro@psicologia.com.br', 195.00),
+    ('78901234567', 'Dr. Gustavo Henrique Nunes', '(11) 92109-8765', 'gustavo.nunes@psicologia.com.br', 215.00),
+    ('89012345678', 'Dra. Larissa Santos Pereira', '(11) 91098-7654', 'larissa.pereira@psicologia.com.br', 185.00),
+    ('90123456789', 'Dr. Marcelo Ribeiro Almeida', '(11) 90987-6543', 'marcelo.almeida@psicologia.com.br', 230.00),
+    ('01234567890', 'Dra. Renata Carvalho Lima', '(11) 89876-5432', 'renata.lima@psicologia.com.br', 205.00);
+
+INSERT IGNORE INTO clinica (clinica_cnpj, clinica_nome, clinica_rua, clinica_bairro, clinica_complemento, clinica_numero) 
+VALUES 
+    ('12345678000199', 'Clínica Bem-Estar', 'Rua das Palmeiras', 'Jardim América', 'Sala 201', '450'),
+    ('98765432000188', 'Centro Psicológico Vida', 'Avenida Paulista', 'Bela Vista', 'Conjunto 34', '1578'),
+    ('45678912000177', 'Espaço Terapêutico Serenidade', 'Rua dos Jacarandás', 'Moema', 'Bloco B', '789'),
+    ('32165498000166', 'Clínica Mente Sã', 'Rua Augusta', 'Consolação', 'Fundos', '2345'),
+    ('65498732000155', 'Clínica Equilíbrio Mental', 'Rua dos Girassóis', 'Vila Mariana', 'Sala 12', '567'),
+    ('78912345000144', 'Centro de Psicologia Acolher', 'Rua das Hortênsias', 'Ipiranga', 'Conjunto 5', '890'),
+    ('85296374000133', 'Instituto de Terapia Integrativa', 'Rua dos Cravos', 'Perdizes', 'Bloco A', '1234'),
+    ('14725836000122', 'Clínica Nova Vida', 'Rua dos Ipês', 'Brooklin', 'Sala 101', '789'),
+    ('36925814000111', 'Espaço Terapêutico Renascer', 'Avenida dos Bandeirantes', 'Morumbi', 'Bloco C', '2345'),
+    ('25814736000100', 'Centro de Psicologia Saber', 'Rua das Camélias', 'Vila Madalena', 'Conjunto 8', '456');
+	
+
+INSERT IGNORE INTO paciente (paciente_cpf, paciente_nome, paciente_telefone, paciente_endereco, profissional_cpf) 
+VALUES 
+    ('11122233344', 'João Pedro Silva', '(11) 91234-5678', 'Rua das Acácias, 123, Apto 45, Jardim das Flores', '12345678901'),
+    ('22233344455', 'Maria Fernanda Oliveira', '(11) 92345-6789', 'Avenida Brasil, 456, Casa 12, Vila Nova', '23456789012'),
+    ('33344455566', 'Carlos Eduardo Santos', '(11) 93456-7890', 'Rua dos Pinheiros, 789, Bloco C, Centro', NULL),
+    ('44455566677', 'Ana Beatriz Rodrigues', '(11) 94567-8901', 'Praça da Liberdade, 321, Apto 101, Liberdade', '34567890123'),
+    ('55566677788', 'Paulo Roberto Gomes', '(11) 95678-9012', 'Rua das Orquídeas, 654, Casa 7, Jardim Botânico', NULL),
+    ('66677788899', 'Mariana Souza Lima', '(11) 96789-0123', 'Rua dos Lírios, 987, Apto 56, Vila Verde', '45678901234'),
+    ('77788899900', 'Fernando Henrique Alves', '(11) 97890-1234', 'Avenida dos Estados, 147, Sala 3, Centro', NULL),
+    ('88899900011', 'Patrícia Cardoso Ferreira', '(11) 98901-2345', 'Rua das Margaridas, 258, Casa 9, Jardim Primavera', '56789012345'),
+    ('99988877766', 'Rodrigo Augusto Martins', '(11) 91234-9876', 'Rua dos Cedros, 345, Apto 12, Jardim Paulista', '67890123456'),
+    ('88877766655', 'Tatiana Mendes Soares', '(11) 92345-8765', 'Avenida Ipiranga, 789, Casa 3, Bela Vista', '78901234567');
+
+
+INSERT IGNORE INTO equipe (clinica_cnpj, profissional_cpf) 
+VALUES 
+    ('12345678000199', '12345678901'),
+    ('12345678000199', '23456789012'),
+    ('98765432000188', '34567890123'),
+    ('98765432000188', '45678901234'),
+    ('45678912000177', '56789012345'),
+    ('45678912000177', '12345678901'),
+    ('32165498000166', '23456789012'),
+    ('32165498000166', '34567890123'),
+    ('65498732000155', '67890123456'),
+    ('78912345000144', '89012345678');
+
+
+INSERT IGNORE INTO prontuario (prontuario_id, paciente_cpf, profissional_cpf, descricao) 
+VALUES 
+    (1, '11122233344', '12345678901', 'Paciente apresenta sintomas de ansiedade generalizada. Relata preocupação excessiva com trabalho e insônia há 3 meses. Iniciaremos terapia cognitivo-comportamental.'),
+    (2, '11122233344', '12345678901', 'Segunda sessão. Paciente demonstrou melhora na identificação de pensamentos automáticos. Técnicas de respiração estão sendo bem assimiladas.'),
+    (3, '22233344455', '23456789012', 'Paciente com queixas de tristeza profunda e falta de motivação. Histórico de luto recente. Avaliação inicial aponta possível quadro depressivo.'),
+    (4, '44455566677', '34567890123', 'Paciente relata dificuldades no relacionamento conjugal. Possível dependência emocional. Iniciaremos abordagem focada na autonomia.'),
+    (5, '66677788899', '45678901234', 'Paciente com fobia social. Relata sudorese e taquicardia em situações sociais. Planejado exposição gradual e técnicas de relaxamento.'),
+    (6, '88899900011', '56789012345', 'Paciente com queixas de estresse pós-traumático. Relata episódio de assalto há 6 meses. Iniciaremos EMDR e terapia de exposição.'),
+    (7, '11122233344', '12345678901', 'Terceira sessão. Paciente demonstrou progresso significativo. Relata melhora na qualidade do sono. Continuação das técnicas de mindfulness.'),
+    (8, '22233344455', '23456789012', 'Quarta sessão. Paciente ainda com sinais de depressão, mas iniciou atividades físicas. Medicado pelo psiquiatra. Acompanhamento conjunto.'),
+    (9, '44455566677', '34567890123', 'Sexta sessão. Paciente começou a reconhecer padrões de relacionamento disfuncionais. Avanço na autonomia emocional.'),
+    (10, '66677788899', '45678901234', 'Quinta sessão. Paciente conseguiu enfrentar situação social com menos ansiedade. Técnicas de exposição estão sendo eficazes.');
+
+
+INSERT IGNORE INTO agendamento (agendamento_id, agendamento_data, agendamento_horario, clinica_cnpj, profissional_cpf, paciente_cpf) 
+VALUES 
+    (1, '2026-09-01', '09:00:00', '12345678000199', '12345678901', '11122233344'),
+    (2, '2026-09-01', '10:30:00', '12345678000199', '12345678901', '11122233344'),
+    (3, '2026-09-02', '14:00:00', '12345678000199', '23456789012', '22233344455'),
+    (4, '2026-09-02', '15:30:00', '98765432000188', '34567890123', '44455566677'),
+    (5, '2026-09-03', '11:00:00', '98765432000188', '45678901234', '66677788899'),
+    (6, '2026-09-03', '16:00:00', '45678912000177', '56789012345', '88899900011'),
+    (7, '2026-09-04', '08:30:00', '12345678000199', '12345678901', '11122233344'),
+    (8, '2026-09-04', '13:00:00', '12345678000199', '23456789012', '22233344455'),
+    (9, '2026-09-05', '10:00:00', '32165498000166', '34567890123', '44455566677'),
+    (10, '2026-09-06', '09:30:00', '98765432000188', '45678901234', '66677788899'),
+    (11, '2026-09-06', '14:30:00', '45678912000177', '56789012345', '88899900011'),
+    (12, '2026-09-07', '11:30:00', '12345678000199', '12345678901', '33344455566'),
+    (13, '2026-09-07', '15:00:00', '98765432000188', '34567890123', '55566677788'),
+    (14, '2026-09-08', '09:00:00', '12345678000199', '23456789012', '77788899900');
+
+-- As consultas demonstrativas foram transferidas para o fim como comentarios.
+-- Nao sao executadas aqui, evitando muitos result sets no phpMyAdmin.
+
+-- --------------------------------- Triggers
+
+DROP TRIGGER IF EXISTS trg_paciente_after_update;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_paciente_after_update
+AFTER UPDATE ON paciente
+FOR EACH ROW
+BEGIN
+    INSERT INTO log_paciente (
+        log_alterado_de_paciente_cpf,
+        log_alterado_para_paciente_cpf,
+        log_alterado_de_paciente_nome,
+        log_alterado_para_paciente_nome,
+        log_alterado_de_paciente_telefone,
+        log_alterado_para_paciente_telefone,
+        log_data,
+        log_alterado_de_profissional_cpf,
+        log_alterado_para_profissional_cpf,
+        log_usuario,
+        log_operacao
+    )
+    VALUES (
+        OLD.paciente_cpf,
+        NEW.paciente_cpf,
+        OLD.paciente_nome,
+        NEW.paciente_nome,
+        OLD.paciente_telefone,
+        NEW.paciente_telefone,
+        NOW(),
+        OLD.profissional_cpf,
+        NEW.profissional_cpf,
+        CURRENT_USER(),
+        'UPDATE'
+    );
+END$$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS trg_paciente_before_delete;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_paciente_before_delete
+BEFORE DELETE ON paciente
+FOR EACH ROW
+BEGIN
+    INSERT INTO log_paciente (
+        log_alterado_de_paciente_cpf,
+        log_alterado_para_paciente_cpf,
+        log_alterado_de_paciente_nome,
+        log_alterado_para_paciente_nome,
+        log_alterado_de_paciente_telefone,
+        log_alterado_para_paciente_telefone,
+        log_data,
+        log_alterado_de_profissional_cpf,
+        log_alterado_para_profissional_cpf,
+        log_usuario,
+        log_operacao
+    )
+    VALUES (
+        OLD.paciente_cpf,
+        NULL,
+        OLD.paciente_nome,
+        NULL,
+        OLD.paciente_telefone,
+        NULL,
+        NOW(),
+        OLD.profissional_cpf,
+        NULL,
+        CURRENT_USER(),
+        'DELETE'
+    );
+END$$
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS trg_paciente_after_insert;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_paciente_after_insert
+AFTER INSERT ON paciente
+FOR EACH ROW
+BEGIN
+    INSERT INTO log_paciente (
+        log_alterado_de_paciente_cpf,
+        log_alterado_para_paciente_cpf,
+        log_alterado_de_paciente_nome,
+        log_alterado_para_paciente_nome,
+        log_alterado_de_paciente_telefone,
+        log_alterado_para_paciente_telefone,
+        log_data,
+        log_alterado_de_profissional_cpf,
+        log_alterado_para_profissional_cpf,
+        log_usuario,
+        log_operacao
+    )
+    VALUES (
+        NULL,
+        NEW.paciente_cpf,
+        NULL,
+        NEW.paciente_nome,
+        NULL,
+        NEW.paciente_telefone,
+        NOW(),
+        NULL,
+        NEW.profissional_cpf,
+        CURRENT_USER(),
+	'INSERT'
+
+    );
+END$$
+
+DELIMITER ;
+-- --------------------------------- Stored Procedure
+
+DROP PROCEDURE IF EXISTS sp_obter_historico_paciente;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_obter_historico_paciente(
+    IN p_paciente_cpf VARCHAR(11)
+)
+BEGIN
+    SELECT 
+        paciente_nome AS 'Paciente',
+        prontuario_id AS 'Nº Prontuário',
+        profissional_nome AS 'Psicólogo(a)',
+        descricao AS 'Evolução Clínica',
+        clinica_nome AS 'Clínica Associada'
+        
+    FROM prontuario
+    
+    INNER JOIN paciente ON prontuario.paciente_cpf = paciente.paciente_cpf
+    INNER JOIN profissional ON prontuario.profissional_cpf = profissional.profissional_cpf
+    INNER JOIN equipe ON profissional.profissional_cpf = equipe.profissional_cpf
+    INNER JOIN clinica ON equipe.clinica_cnpj = clinica.clinica_cnpj
+    
+    WHERE paciente.paciente_cpf = p_paciente_cpf;
+END$$
+
+DELIMITER ;
+
+-- Exemplo para executar separadamente na aba Rotinas:
+-- CALL sp_obter_historico_paciente('11122233344');
+
+
+-- ------------------------- VIEW AGENDAMENTOS
+
+DROP VIEW IF EXISTS vw_agendamentos;
+
+CREATE VIEW vw_agendamentos AS
+SELECT 
+    agendamento.agendamento_id,
+    agendamento.agendamento_data,
+    agendamento.agendamento_horario,
+    agendamento.paciente_cpf,
+    profissional.profissional_nome,
+    paciente.paciente_nome,
+    clinica.clinica_nome
+FROM agendamento
+INNER JOIN profissional
+    ON agendamento.profissional_cpf = profissional.profissional_cpf
+INNER JOIN clinica
+    ON agendamento.clinica_cnpj = clinica.clinica_cnpj
+INNER JOIN paciente
+    ON agendamento.paciente_cpf = paciente.paciente_cpf;
+
+
+-- ------------------------- PROCEDURE ALTERAR AGENDAMENTO
+
+DROP PROCEDURE IF EXISTS alterar_agendamento;
+
+DELIMITER $$
+
+CREATE PROCEDURE alterar_agendamento(
+    IN novo_dia DATE,
+    IN novo_horario TIME,
+    IN p_paciente_cpf VARCHAR(11)
+)
+BEGIN
+
+    SELECT *
+    FROM vw_agendamentos
+    WHERE paciente_cpf = p_paciente_cpf;
+
+    UPDATE agendamento
+    SET agendamento_data = novo_dia,
+        agendamento_horario = novo_horario
+    WHERE agendamento.paciente_cpf = p_paciente_cpf;
+
+END $$
+
+DELIMITER ;
+
+-- ------------------------------- VIEW MEDIA CUSTO
+
+DROP VIEW IF EXISTS vw_media_custo_clinica;
+
+CREATE VIEW vw_media_custo_clinica AS
+SELECT
+    c.clinica_cnpj,
+    c.clinica_nome,
+    AVG(p.profissional_valor_consulta) AS media_custo
+FROM clinica c
+INNER JOIN equipe e
+    ON c.clinica_cnpj = e.clinica_cnpj
+INNER JOIN profissional p
+    ON e.profissional_cpf = p.profissional_cpf
+GROUP BY
+    c.clinica_cnpj,
+    c.clinica_nome;
+
+
+-- ------------------------------- TRIGGER ATUALIZA MEDIA
+
+DROP TRIGGER IF EXISTS trg_atualiza_media_custo;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_atualiza_media_custo
+AFTER UPDATE ON profissional
+FOR EACH ROW
+BEGIN
+
+    UPDATE clinica c
+    INNER JOIN vw_media_custo_clinica v
+        ON c.clinica_cnpj = v.clinica_cnpj
+    INNER JOIN equipe e
+        ON c.clinica_cnpj = e.clinica_cnpj
+    SET c.clinica_media_custo = v.media_custo
+    WHERE e.profissional_cpf = NEW.profissional_cpf;
+
+END$$
+
+DELIMITER ;
+
+-- ------------------------------- PROCEDURE ALTERA VALOR
+
+DROP PROCEDURE IF EXISTS alterar_valor_consulta;
+
+DELIMITER $$
+
+CREATE PROCEDURE alterar_valor_consulta(
+    IN p_profissional_cpf VARCHAR(11),
+    IN p_novo_valor DECIMAL(10,2)
+)
+BEGIN
+
+    UPDATE profissional
+    SET profissional_valor_consulta = p_novo_valor
+    WHERE profissional_cpf = p_profissional_cpf;
+
+END$$
+
+DELIMITER ;
+
+-- ------------------------------- UPDATE
+
+UPDATE clinica c
+INNER JOIN vw_media_custo_clinica v
+    ON c.clinica_cnpj = v.clinica_cnpj
+SET c.clinica_media_custo = v.media_custo;
+
+-- Mesmo efeito da chamada de exemplo, sem usar CALL na instalacao:
+UPDATE profissional
+SET profissional_valor_consulta = 250.00
+WHERE profissional_cpf = '12345678901'
+  AND profissional_valor_consulta <> 250.00;
+
+-- ------------------------------- ATUALIZACAO DE AGENDAMENTO
+
+-- Mesmo efeito da chamada de exemplo, sem devolver resultsets:
+UPDATE agendamento
+SET agendamento_data = '2026-09-20',
+    agendamento_horario = '15:00:00'
+WHERE paciente_cpf = '11122233344'
+  AND (agendamento_data <> '2026-09-20'
+       OR agendamento_horario <> '15:00:00');
+
+
+-- ------------------------------- VIEW RELATORIO PACIENTE
+
+DROP VIEW IF EXISTS relatorio_paciente;
+
+CREATE VIEW relatorio_paciente AS
+SELECT
+    paciente.paciente_cpf,
+    paciente.paciente_nome,
+    prontuario.descricao
+FROM paciente
+INNER JOIN prontuario
+    ON paciente.paciente_cpf = prontuario.paciente_cpf;
+
+-- ------------------------------- PROCEDURE PARA VER UM RELATORIO PACIENTE
+
+DROP PROCEDURE IF EXISTS sp_relatorio_paciente;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_relatorio_paciente(
+    IN p_paciente_cpf VARCHAR(11)
+)
+BEGIN
+    SELECT
+        paciente_nome,
+        descricao
+    FROM relatorio_paciente
+    WHERE paciente_cpf = p_paciente_cpf;
+END$$
+
+DELIMITER ;
+
+
+
+-- =====================================================================
+-- M6: TRANSACAO - PROCEDURE sp_operacao
+-- =====================================================================
+-- Operacao real: registra um agendamento de demonstracao.
+-- O mesmo id de agendamento pode ser utilizado novamente sem duplicacao.
+-- Nao e chamada aqui para evitar erros de resultados pendentes no phpMyAdmin.
+-- Teste em consulta SEPARADA: CALL sp_operacao();
+
+DROP PROCEDURE IF EXISTS sp_operacao;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_operacao()
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    INSERT INTO agendamento (
+        agendamento_id,
+        agendamento_data,
+        agendamento_horario,
+        clinica_cnpj,
+        profissional_cpf,
+        paciente_cpf
+    ) VALUES (
+        900001,
+        '2026-09-21',
+        '14:00:00',
+        '12345678000199',
+        '12345678901',
+        '11122233344'
+    )
+    ON DUPLICATE KEY UPDATE
+        agendamento_id = agendamento_id;
+
+    COMMIT;
+END$$
+
+DELIMITER ;
+
+-- =====================================================================
+-- POVOAR_BD.TXT: 1.000.000 DE PRONTUARIOS, SEM CALL
+-- =====================================================================
+-- Divide em dez INSERTs de 100 mil linhas para reduzir o risco de timeout.
+-- Reexecutar nao gera duplicatas na chave primaria, mesmo se parou no meio.
+-- Reconhece os IDs de uma execucao anterior se o registro sintetico 1 existe.
+-- Nao remova ou altere a descricao sintetica usada como marcador abaixo.
+
+SET @primeiro_id_prontuario = COALESCE(
+    (SELECT MIN(prontuario_id)
+     FROM prontuario
+     WHERE descricao = 'Registro sintetico de teste numero 1. Conteudo ficticio para teste de volume.'),
+    (SELECT COALESCE(MAX(prontuario_id), 0) + 1 FROM prontuario)
+);
+
+DROP TEMPORARY TABLE IF EXISTS tmp_pacientes_prontuario;
+DROP TEMPORARY TABLE IF EXISTS tmp_profissionais_prontuario;
+
+CREATE TEMPORARY TABLE tmp_pacientes_prontuario (
+    idx INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    paciente_cpf VARCHAR(11) NOT NULL
+) ENGINE=InnoDB;
+CREATE TEMPORARY TABLE tmp_profissionais_prontuario (
+    idx INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    profissional_cpf VARCHAR(11) NOT NULL
+) ENGINE=InnoDB;
+
+INSERT INTO tmp_pacientes_prontuario (paciente_cpf)
+SELECT paciente_cpf FROM paciente ORDER BY paciente_cpf;
+INSERT INTO tmp_profissionais_prontuario (profissional_cpf)
+SELECT profissional_cpf FROM profissional ORDER BY profissional_cpf;
+
+SET @qtd_pacientes_prontuario = (SELECT COUNT(*) FROM tmp_pacientes_prontuario);
+SET @qtd_profissionais_prontuario = (SELECT COUNT(*) FROM tmp_profissionais_prontuario);
+
+-- Pelo menos 10 pacientes e 10 profissionais ja foram inseridos na base.
+
+-- LOTE 1/10: registros 1 a 100000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 0 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 0 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(0 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((0 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 2/10: registros 100001 a 200000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 100000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 100000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(100000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((100000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 3/10: registros 200001 a 300000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 200000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 200000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(200000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((200000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 4/10: registros 300001 a 400000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 300000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 300000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(300000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((300000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 5/10: registros 400001 a 500000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 400000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 400000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(400000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((400000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 6/10: registros 500001 a 600000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 500000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 500000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(500000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((500000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 7/10: registros 600001 a 700000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 600000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 600000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(600000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((600000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 8/10: registros 700001 a 800000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 700000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 700000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(700000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((700000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 9/10: registros 800001 a 900000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 800000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 800000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(800000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((800000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+-- LOTE 10/10: registros 900001 a 1000000
+INSERT IGNORE INTO prontuario (
+    prontuario_id, paciente_cpf, profissional_cpf, descricao
+)
+SELECT
+    @primeiro_id_prontuario + 900000 + numeros.n,
+    pacientes.paciente_cpf,
+    profissionais.profissional_cpf,
+    CONCAT('Registro sintetico de teste numero ', 900000 + numeros.n + 1,
+           '. Conteudo ficticio para teste de volume.')
+FROM (
+        SELECT a.n + b.n * 10 + c.n * 100 + d.n * 1000 + e.n * 10000 AS n
+        FROM (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) a
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) b
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) c
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) d
+        CROSS JOIN (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL SELECT 9) e
+    ) numeros
+INNER JOIN tmp_pacientes_prontuario pacientes
+    ON pacientes.idx = MOD(900000 + numeros.n, @qtd_pacientes_prontuario) + 1
+INNER JOIN tmp_profissionais_prontuario profissionais
+    ON profissionais.idx = MOD(
+        FLOOR((900000 + numeros.n) / @qtd_pacientes_prontuario),
+        @qtd_profissionais_prontuario
+    ) + 1;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_pacientes_prontuario;
+DROP TEMPORARY TABLE IF EXISTS tmp_profissionais_prontuario;
+
+
+-- =====================================================================
+-- INDICE DA DESCRICAO: index_db.txt
+-- =====================================================================
+-- Usar prefixo 191 evita limites antigos de 767 bytes em InnoDB/utf8.
+-- A alternativa DO 0 nao retorna resultset quando o indice ja existe.
+
+SET @sql_indice = (
+    SELECT IF(COUNT(*) = 0,
+        'CREATE INDEX idx_descricao ON prontuario (descricao(191))',
+        'DO 0'
+    )
+    FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'prontuario'
+      AND INDEX_NAME = 'idx_descricao'
+);
+PREPARE stmt_indice FROM @sql_indice;
+EXECUTE stmt_indice;
+DEALLOCATE PREPARE stmt_indice;
+
+
+-- =====================================================================
+-- IMPLEMENTACAO_EVENTS.TXT: 100.000 REGISTROS ADICIONAIS EM 5 MINUTOS
+-- =====================================================================
+-- EVENT e procedure sao instalados agora; CALL e executado pelo agendador,
+-- nao pelo phpMyAdmin. Repeticoes sao protegidas por INSERT IGNORE.
+-- Exige permissao de administrador para SET GLOBAL e permissao EVENT.
+SET time_zone = '-03:00';
+SET GLOBAL event_scheduler = ON;
+
+-- Evento original preservado na segunda execucao (nao reinicia os 5 minutos).
+DROP PROCEDURE IF EXISTS sp_gerar_100000_registros;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_gerar_100000_registros()
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        DROP TEMPORARY TABLE IF EXISTS tmp_numeros_geracao;
+        RESIGNAL;
+    END;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_numeros_geracao;
+
+    CREATE TEMPORARY TABLE tmp_numeros_geracao (
+        n INT NOT NULL PRIMARY KEY
+    ) ENGINE=InnoDB;
+
+    INSERT INTO tmp_numeros_geracao (n)
+    SELECT
+        1 + a.n + b.n * 10 + c.n * 100
+          + d.n * 1000 + e.n * 10000
+    FROM
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) a
+    CROSS JOIN
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) b
+    CROSS JOIN
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) c
+    CROSS JOIN
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) d
+    CROSS JOIN
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) e;
+
+    START TRANSACTION;
+
+    INSERT IGNORE INTO clinica (
+        clinica_cnpj,
+        clinica_nome,
+        clinica_rua,
+        clinica_bairro,
+        clinica_complemento,
+        clinica_numero,
+        clinica_media_custo
+    )
+    SELECT
+        CAST(80000000000000 + n AS CHAR),
+        CONCAT('Clinica Teste ', LPAD(n, 4, '0')),
+        CONCAT('Rua de Teste ', n),
+        'Bairro de Teste',
+        NULL,
+        CAST(n AS CHAR),
+        100.00 + MOD(n, 150)
+    FROM tmp_numeros_geracao
+    WHERE n <= 1000;
+
+    INSERT IGNORE INTO profissional (
+        profissional_cpf,
+        profissional_nome,
+        profissional_telefone,
+        profissional_email,
+        profissional_valor_consulta
+    )
+    SELECT
+        CAST(80000000000 + n AS CHAR),
+        CONCAT('Profissional Teste ', LPAD(n, 5, '0')),
+        CONCAT('+55 11 7', LPAD(n, 8, '0')),
+        CONCAT(
+            'profissional.teste',
+            LPAD(n, 5, '0'),
+            '@exemplo.invalid'
+        ),
+        150.00 + MOD(n, 151)
+    FROM tmp_numeros_geracao
+    WHERE n <= 10000;
+
+    INSERT IGNORE INTO paciente (
+        paciente_cpf,
+        paciente_nome,
+        paciente_telefone,
+        paciente_endereco,
+        profissional_cpf
+    )
+    SELECT
+        CAST(60000000000 + n AS CHAR),
+        CONCAT('Paciente Teste ', LPAD(n, 5, '0')),
+        CONCAT('+55 11 8', LPAD(n, 8, '0')),
+        CONCAT('Endereco de teste ', n, ', Bairro de Teste'),
+        CAST(
+            80000000000 + MOD(n - 1, 10000) + 1
+            AS CHAR
+        )
+    FROM tmp_numeros_geracao
+    WHERE n <= 80000;
+
+    INSERT IGNORE INTO equipe (
+        clinica_cnpj,
+        profissional_cpf
+    )
+    SELECT
+        CAST(
+            80000000000000 + MOD(n - 1, 1000) + 1
+            AS CHAR
+        ),
+        CAST(80000000000 + n AS CHAR)
+    FROM tmp_numeros_geracao
+    WHERE n <= 9000;
+
+    COMMIT;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_numeros_geracao;
+END$$
+
+CREATE EVENT IF NOT EXISTS evento_gerar_100000_registros
+ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
+ON COMPLETION PRESERVE
+ENABLE
+DO
+    CALL sp_gerar_100000_registros()$$
+
+DELIMITER ;
+
+
+
+-- =====================================================================
+-- M7: SEGURANCA - USUARIO DA APLICACAO COM PRIVILEGIOS LIMITADOS
+-- =====================================================================
+-- Necessita conta administradora com CREATE USER e GRANT.
+-- Esta conta tem permissoes apenas neste banco, nao globais.
+-- A senha abaixo e somente inicial e deve ser substituida antes de uso real.
+-- IF NOT EXISTS evita erros caso o professor execute o SQL duas vezes.
+-- Nao usa REVOKE indiscriminado para nao afetar contas preexistentes.
+
+CREATE USER IF NOT EXISTS 'app_psicologia'@'localhost'
+    IDENTIFIED BY 'Substitua_Esta_Senha_2026!';
+
+GRANT SELECT, INSERT, UPDATE
+ON trabalho_psicologia.*
+TO 'app_psicologia'@'localhost';
+
+-- Mesmo usuario habilitado tambem para conexoes TCP via 127.0.0.1,
+-- como no servidor de desenvolvimento exibido no phpMyAdmin.
+CREATE USER IF NOT EXISTS 'app_psicologia'@'127.0.0.1'
+    IDENTIFIED BY 'Substitua_Esta_Senha_2026!';
+
+GRANT SELECT, INSERT, UPDATE
+ON trabalho_psicologia.*
+TO 'app_psicologia'@'127.0.0.1';
+
+-- Teste em consulta separada:
+-- SHOW GRANTS FOR 'app_psicologia'@'localhost';
+-- Nao concede DELETE, DROP, SUPER, CREATE, EVENT ou privilegios globais.
+
+-- =====================================================================
+-- M8: AUTOMACAO - ev_rotina RECORRENTE E HISTORICO DE EXECUCOES
+-- =====================================================================
+-- Complementa (NAO substitui) evento_gerar_100000_registros.
+-- A tabela de auditoria permite comprovar uma execucao real pelo agendador.
+-- O primeiro disparo fica previsto para o horario de criacao do evento.
+-- O agendador precisa permanecer habilitado e o servidor em funcionamento.
+
+CREATE TABLE IF NOT EXISTS log_evento_rotina (
+    execucao_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    executado_em DATETIME NOT NULL,
+    observacao VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE EVENT IF NOT EXISTS ev_rotina
+ON SCHEDULE EVERY 1 MINUTE
+STARTS CURRENT_TIMESTAMP
+ON COMPLETION PRESERVE
+ENABLE
+DO
+    INSERT INTO log_evento_rotina (executado_em, observacao)
+    VALUES (NOW(), 'Rotina automatica executada pelo agendador MySQL');
+
+-- Verificacoes isoladas (nao produzem result sets durante a importacao):
+-- SHOW VARIABLES LIKE 'event_scheduler';
+-- SELECT EVENT_NAME, STATUS, LAST_EXECUTED FROM information_schema.EVENTS
+-- WHERE EVENT_SCHEMA = DATABASE() AND EVENT_NAME IN ('ev_rotina', 'evento_gerar_100000_registros');
+-- SELECT COUNT(*) AS execucoes_realizadas, MAX(executado_em) AS ultima_execucao
+-- FROM log_evento_rotina;
+-- O log fica preenchido somente apos o evento ser executado de fato.
+
+-- =====================================================================
+-- CONSULTAS OPCIONAIS (comentadas para nao gerar resultados intermediarios)
+-- Execute em outra consulta, caso queira examinar.
+-- =====================================================================
+-- -- ---------------------------------------------------------- SELECTS
+--
+-- -- ---------------------------------- Ver os pacientes com os seus psicólogos 
+-- SELECT paciente.paciente_nome, profissional.profissional_nome
+-- FROM paciente
+-- JOIN profissional ON paciente.profissional_cpf = profissional.profissional_cpf;
+--
+-- -- ---------------------------------- Ver os profissionais da Clínica Bem-Estar
+-- SELECT profissional.profissional_nome, clinica.clinica_nome
+-- FROM profissional
+--
+-- INNER JOIN equipe ON profissional.profissional_cpf = equipe.profissional_cpf
+-- INNER JOIN clinica ON equipe.clinica_cnpj = clinica.clinica_cnpj 
+--
+-- WHERE clinica.clinica_nome = 'Clínica Bem-Estar';
+--
+-- -- ---------------------------------- Ver todos os pacientes que tem agendamento dia 2026-09-07
+-- SELECT agendamento_data, paciente_nome
+-- FROM agendamento
+--
+-- INNER JOIN paciente ON agendamento.paciente_cpf = paciente.paciente_cpf
+--
+-- WHERE agendamento.agendamento_data = '2026-09-07';
+--
+-- -- ---------------------------------- Ver todos os agendamentos da clinica Espaço Terapêutico Serenidade 
+-- SELECT *
+-- FROM agendamento 
+--
+-- INNER JOIN clinica ON agendamento.clinica_cnpj = clinica.clinica_cnpj
+--
+-- WHERE clinica.clinica_nome = 'Espaço Terapêutico Serenidade';
+--
+-- -- ---------------------------------- Ver o nome da clínica a partir do cnpj
+-- SELECT clinica.clinica_nome
+-- FROM clinica
+--
+-- WHERE clinica.clinica_cnpj = '65498732000155';
+--
+-- -- ---------------------------------- Ver o paciente de determinado profissional a partir do cpf
+-- SELECT prontuario.paciente_cpf, paciente.paciente_nome, profissional.profissional_nome
+-- FROM prontuario
+--
+-- INNER JOIN paciente ON prontuario.paciente_cpf = paciente.paciente_cpf
+-- INNER JOIN profissional ON prontuario.profissional_cpf = profissional.profissional_cpf 
+--
+-- WHERE prontuario.paciente_cpf = '88899900011';
+--
+-- -- ---------------------------------- Ver todos os profissionais da equipe de uma clinica
+-- SELECT equipe.profissional_cpf, equipe.clinica_cnpj, profissional.profissional_nome
+-- FROM equipe
+--
+-- INNER JOIN profissional ON equipe.profissional_cpf = profissional.profissional_cpf
+--
+-- WHERE equipe.clinica_cnpj = '12345678000199';
+-- CALL sp_obter_historico_paciente('11122233344');
+-- CALL sp_relatorio_paciente('11122233344');
+-- CALL alterar_valor_consulta('12345678901', 250.00);
+-- CALL alterar_agendamento('2026-09-20', '15:00:00', '11122233344');
+-- =====================================================================
+-- VALIDACAO FINAL
+-- =====================================================================
+-- Um unico SELECT simples no final (sem CALL) para conferir o resultado.
+SELECT (SELECT COUNT(*) FROM prontuario) AS total_prontuarios,
+       (SELECT COUNT(*) FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = DATABASE()
+          AND TABLE_NAME = 'prontuario'
+          AND INDEX_NAME = 'idx_descricao') AS indice_descricao_criado,
+       (SELECT COUNT(*) FROM information_schema.EVENTS
+        WHERE EVENT_SCHEMA = DATABASE()
+          AND EVENT_NAME = 'evento_gerar_100000_registros') AS evento_criado;
