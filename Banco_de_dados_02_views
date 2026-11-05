@@ -115,7 +115,6 @@ WHERE p.profissional_valor_consulta IN (
 );
 
 -- ------------------------------- vw_10 (MIN e MAX)
-DROP VIEW IF EXISTS vw_10;
 
 CREATE OR REPLACE VIEW vw_10 AS
 
