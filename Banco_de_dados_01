@@ -417,9 +417,7 @@ CALL sp_obter_historico_paciente("11122233344");
 
 -- ------------------------- VIEW AGENDAMENTOS
 
-DROP VIEW IF EXISTS vw_agendamentos;
-
-CREATE VIEW vw_agendamentos AS
+CREATE OR REPLACE VIEW vw_agendamentos AS
 SELECT 
     agendamento.agendamento_id,
     agendamento.agendamento_data,
@@ -465,9 +463,7 @@ DELIMITER ;
 
 -- ------------------------------- VIEW MEDIA CUSTO
 
-DROP VIEW IF EXISTS vw_media_custo_clinica;
-
-CREATE VIEW vw_media_custo_clinica AS
+CREATE OR REPLACE VIEW  vw_media_custo_clinica AS
 SELECT
     c.clinica_cnpj,
     c.clinica_nome,
@@ -557,9 +553,7 @@ CALL alterar_agendamento(
 
 -- ------------------------------- VIEW RELATORIO PACIENTE
 
-DROP VIEW IF EXISTS relatorio_paciente;
-
-CREATE VIEW relatorio_paciente AS
+CREATE OR REPLACE VIEW  relatorio_paciente AS
 SELECT
     paciente.paciente_cpf,
     paciente.paciente_nome,
