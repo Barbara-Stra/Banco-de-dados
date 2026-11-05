@@ -87,7 +87,6 @@ SELECT
 FROM profissional;
 
 -- ------------------------------- vw_08 (HAVING)
-DROP VIEW IF EXISTS vw_08;
 
 CREATE OR REPLACE VIEW vw_08 AS
 
