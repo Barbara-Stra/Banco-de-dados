@@ -1,7 +1,5 @@
 -- ------------------------------- vw_01 (NULL)
-DROP VIEW IF EXISTS vw_01;
-
-CREATE VIEW vw_01 AS
+CREATE OR REPLACE VIEW vw_01 AS
 
 SELECT p.paciente_nome, pro.profissional_nome
 FROM paciente p
@@ -11,9 +9,8 @@ LEFT JOIN profissional pro ON p.profissional_cpf = pro.profissional_cpf
 WHERE p.profissional_cpf IS NULL;
 
 -- ------------------------------- vw_02 (LEFT JOIN)
-DROP VIEW IF EXISTS vw_02;
 
-CREATE VIEW vw_02 AS
+CREATE OR REPLACE VIEW vw_02 AS
 
 SELECT
     p.paciente_nome,
@@ -25,9 +22,8 @@ LEFT JOIN profissional pro
     ON p.profissional_cpf = pro.profissional_cpf;
 
 -- ------------------------------- vw_03 (RIGHT JOIN)
-DROP VIEW IF EXISTS vw_03;
 
-CREATE VIEW vw_03 AS
+CREATE OR REPLACE VIEW vw_03 AS
 
 SELECT
     p.paciente_nome,
@@ -39,9 +35,8 @@ RIGHT JOIN profissional pro
     ON p.profissional_cpf = pro.profissional_cpf;
 
 -- ------------------------------- vw_04 (FULL JOIN)
-DROP VIEW IF EXISTS vw_04;
 
-CREATE VIEW vw_04 AS
+CREATE OR REPLACE VIEW vw_04 AS
 
 SELECT
     p.paciente_nome,
@@ -62,9 +57,8 @@ RIGHT JOIN profissional pro
     ON p.profissional_cpf = pro.profissional_cpf;
 
 -- ------------------------------- vw_05 (ORDER BY ASC)
-DROP VIEW IF EXISTS vw_05;
 
-CREATE VIEW vw_05 AS
+CREATE OR REPLACE VIEW vw_05 AS
 
 SELECT
     profissional_nome,
@@ -74,9 +68,8 @@ FROM profissional
 ORDER BY profissional_valor_consulta ASC;
 
 -- ------------------------------- vw_06 (LIMIT)
-DROP VIEW IF EXISTS vw_06;
 
-CREATE VIEW vw_06 AS
+CREATE OR REPLACE VIEW vw_06 AS
 
 SELECT c.clinica_nome, c.clinica_media_custo
 FROM clinica c
@@ -85,9 +78,8 @@ ORDER BY clinica_media_custo DESC
 LIMIT 3;
 
 -- ------------------------------- vw_07 (AVG)
-DROP VIEW IF EXISTS vw_07;
 
-CREATE VIEW vw_07 AS
+CREATE OR REPLACE VIEW vw_07 AS
 
 SELECT
     AVG(profissional_valor_consulta) AS media_consultas,
@@ -97,7 +89,7 @@ FROM profissional;
 -- ------------------------------- vw_08 (HAVING)
 DROP VIEW IF EXISTS vw_08;
 
-CREATE VIEW vw_08 AS
+CREATE OR REPLACE VIEW vw_08 AS
 
 SELECT
     profissional_valor_consulta,
@@ -111,9 +103,8 @@ HAVING COUNT(*) > 1
 ORDER BY profissional_valor_consulta DESC;
 
 -- ------------------------------- vw_09 (EMPATE)
-DROP VIEW IF EXISTS vw_09;
 
-CREATE VIEW vw_09 AS
+CREATE OR REPLACE VIEW vw_09 AS
 SELECT p.profissional_nome, p.profissional_valor_consulta
 FROM profissional p
 WHERE p.profissional_valor_consulta IN (
@@ -126,7 +117,7 @@ WHERE p.profissional_valor_consulta IN (
 -- ------------------------------- vw_10 (MIN e MAX)
 DROP VIEW IF EXISTS vw_10;
 
-CREATE VIEW vw_10 AS
+CREATE OR REPLACE VIEW vw_10 AS
 
 SELECT
     profissional_nome,
