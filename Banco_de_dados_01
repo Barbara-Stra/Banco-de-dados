@@ -581,6 +581,3 @@ END$$
 
 DELIMITER ;
 
-
-DELIMITER ;
-
