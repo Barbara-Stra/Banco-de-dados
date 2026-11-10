@@ -1,0 +1,96 @@
+-- -----------------------------------------------
+-- M6 - TRANSACAO
+-- Atualizar profissional do paciente
+-- e registrar um novo agendamento
+-- -----------------------------------------------
+
+DROP PROCEDURE IF EXISTS sp_agendar_consulta_transacao;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_agendar_consulta_transacao(
+    IN p_agendamento_id INT,
+    IN p_paciente_cpf VARCHAR(11),
+    IN p_profissional_cpf VARCHAR(11),
+    IN p_clinica_cnpj VARCHAR(14),
+    IN p_data DATE,
+    IN p_horario TIME
+)
+BEGIN
+
+    -- Tratamento de erros: desfaz a transação
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
+    -- Verifica se o paciente existe
+    IF NOT EXISTS (
+        SELECT 1
+        FROM paciente
+        WHERE paciente_cpf = p_paciente_cpf
+    ) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Paciente não encontrado!';
+    END IF;
+
+    -- Primeira alteração:
+    -- Atualiza o profissional responsável pelo paciente
+    UPDATE paciente
+    SET profissional_cpf = p_profissional_cpf
+    WHERE paciente_cpf = p_paciente_cpf;
+
+    -- Segunda alteração:
+    -- Registra o agendamento
+    INSERT INTO agendamento (
+        agendamento_id,
+        agendamento_data,
+        agendamento_horario,
+        clinica_cnpj,
+        profissional_cpf,
+        paciente_cpf
+    )
+    VALUES (
+        p_agendamento_id,
+        p_data,
+        p_horario,
+        p_clinica_cnpj,
+        p_profissional_cpf,
+        p_paciente_cpf
+    );
+
+    -- Confirma as duas operações
+    COMMIT;
+
+
+
+-- Executando a transação
+
+CALL sp_agendar_consulta_transacao(
+    15,
+    '11122233344',
+    '23456789012',
+    '12345678000199',
+    '2026-11-15',
+    '14:00:00'
+);
+
+-- Verificar o profissional atualizado do paciente
+
+SELECT
+    paciente_nome,
+    profissional_cpf
+FROM paciente
+WHERE paciente_cpf = '11122233344';
+
+
+-- Verificar o novo agendamento
+
+SELECT *
+FROM agendamento
+WHERE agendamento_id = 15;
+
+END$$

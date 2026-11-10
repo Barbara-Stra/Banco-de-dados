@@ -1,0 +1,179 @@
+
+-- Ver se os eventos estão ativados
+SHOW VARIABLES LIKE 'event_scheduler';
+
+-- ativa os eventos cronometrados
+SET GLOBAL event_scheduler = ON;
+
+
+-- CÓDIGO PARA CRIAR O EVENT
+
+USE trabalho_psicologia;
+
+SET time_zone = '-03:00';
+
+SET GLOBAL event_scheduler = ON;
+
+DROP EVENT IF EXISTS evento_gerar_100000_registros;
+DROP PROCEDURE IF EXISTS sp_gerar_100000_registros;
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_gerar_100000_registros()
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        DROP TEMPORARY TABLE IF EXISTS tmp_numeros_geracao;
+        RESIGNAL;
+    END;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_numeros_geracao;
+
+    CREATE TEMPORARY TABLE tmp_numeros_geracao (
+        n INT NOT NULL PRIMARY KEY
+    ) ENGINE=InnoDB;
+
+    INSERT INTO tmp_numeros_geracao (n)
+    SELECT
+        1 + a.n + b.n * 10 + c.n * 100
+          + d.n * 1000 + e.n * 10000
+    FROM
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) a
+    CROSS JOIN
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) b
+    CROSS JOIN
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) c
+    CROSS JOIN
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) d
+    CROSS JOIN
+        (SELECT 0 n UNION ALL SELECT 1 UNION ALL SELECT 2
+         UNION ALL SELECT 3 UNION ALL SELECT 4 UNION ALL
+         SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+         UNION ALL SELECT 8 UNION ALL SELECT 9) e;
+
+    START TRANSACTION;
+
+    INSERT INTO clinica (
+        clinica_cnpj,
+        clinica_nome,
+        clinica_rua,
+        clinica_bairro,
+        clinica_complemento,
+        clinica_numero,
+        clinica_media_custo
+    )
+    SELECT
+        CAST(80000000000000 + n AS CHAR),
+        CONCAT('Clinica Teste ', LPAD(n, 4, '0')),
+        CONCAT('Rua de Teste ', n),
+        'Bairro de Teste',
+        NULL,
+        CAST(n AS CHAR),
+        100.00 + MOD(n, 150)
+    FROM tmp_numeros_geracao
+    WHERE n <= 1000;
+
+    INSERT INTO profissional (
+        profissional_cpf,
+        profissional_nome,
+        profissional_telefone,
+        profissional_email,
+        profissional_valor_consulta
+    )
+    SELECT
+        CAST(80000000000 + n AS CHAR),
+        CONCAT('Profissional Teste ', LPAD(n, 5, '0')),
+        CONCAT('+55 11 7', LPAD(n, 8, '0')),
+        CONCAT(
+            'profissional.teste',
+            LPAD(n, 5, '0'),
+            '@exemplo.invalid'
+        ),
+        150.00 + MOD(n, 151)
+    FROM tmp_numeros_geracao
+    WHERE n <= 10000;
+
+    INSERT INTO paciente (
+        paciente_cpf,
+        paciente_nome,
+        paciente_telefone,
+        paciente_endereco,
+        profissional_cpf
+    )
+    SELECT
+        CAST(60000000000 + n AS CHAR),
+        CONCAT('Paciente Teste ', LPAD(n, 5, '0')),
+        CONCAT('+55 11 8', LPAD(n, 8, '0')),
+        CONCAT('Endereco de teste ', n, ', Bairro de Teste'),
+        CAST(
+            80000000000 + MOD(n - 1, 10000) + 1
+            AS CHAR
+        )
+    FROM tmp_numeros_geracao
+    WHERE n <= 80000;
+
+    INSERT INTO equipe (
+        clinica_cnpj,
+        profissional_cpf
+    )
+    SELECT
+        CAST(
+            80000000000000 + MOD(n - 1, 1000) + 1
+            AS CHAR
+        ),
+        CAST(80000000000 + n AS CHAR)
+    FROM tmp_numeros_geracao
+    WHERE n <= 9000;
+
+    COMMIT;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_numeros_geracao;
+END$$
+
+CREATE EVENT evento_gerar_100000_registros
+ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
+ON COMPLETION PRESERVE
+ENABLE
+DO
+    CALL sp_gerar_100000_registros()$$
+
+DELIMITER ;
+
+-- CÓDIGO PARA VERIFICAR SE ESTA CERTO
+
+SHOW VARIABLES LIKE 'event_scheduler';
+
+SHOW EVENTS FROM trabalho_psicologia;
+
+SELECT COUNT(*) AS clinicas_inseridas
+FROM clinica
+WHERE clinica_cnpj BETWEEN '80000000000001'
+                       AND '80000000001000';
+
+SELECT COUNT(*) AS profissionais_inseridos
+FROM profissional
+WHERE profissional_cpf BETWEEN '80000000001'
+                           AND '80000010000';
+
+SELECT COUNT(*) AS pacientes_inseridos
+FROM paciente
+WHERE paciente_cpf BETWEEN '60000000001'
+                       AND '60000080000';
+
+SELECT COUNT(*) AS equipes_inseridas
+FROM equipe
+WHERE clinica_cnpj BETWEEN '80000000000001'
+                       AND '80000000001000';

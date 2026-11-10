@@ -1,0 +1,15 @@
+
+
+USE trabalho_psicologia;
+
+-- 1. Criar usuario da aplicacao
+CREATE USER IF NOT EXISTS
+'app_BaMaTi'@'localhost'
+IDENTIFIED BY 'BaMaTi@2026_Seguro!';
+
+GRANT SELECT, INSERT, UPDATE
+ON trabalho_psicologia.*
+TO 'app_BaMaTi'@'localhost';
+
+-- 3. Verificar permissoes do usuario
+SHOW GRANTS FOR 'app_BaMaTi'@'localhost';
